@@ -8,9 +8,9 @@ from haystack.pipelines.base import Pipeline
 
 class FileStorePipeline(BaseStandardPipeline):
     def __init__(self,
-                 document_store: BaseDocumentStore,
+                 text_converter: TextConverter,
                  preprocessor: PreProcessor,
-                 text_converter: TextConverter):
+                 document_store: BaseDocumentStore):
         self.pipeline = Pipeline() # Underlying Pipeline
         self.document_store = document_store # Document store to hold all process Documents
         self.preprocessor = preprocessor # Preprocessor to clean the Documents

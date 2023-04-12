@@ -1,22 +1,9 @@
-import os
-
-import pandas as pd
-import numpy as np
-
 from haystack.document_stores.faiss import FAISSDocumentStore
-from haystack.pipelines import Pipeline
-from haystack.nodes import PreProcessor, TextConverter, EmbeddingRetriever
 
-# df = pd.read_csv("datasets/arxiv_short.csv")
-# print(df.head())
-# print(df.isnull().sum())
+doc_store_name = "test_faiss"
+# doc_store = FAISSDocumentStore(sql_url="sqlite:///"+doc_store_name+"_document_store.db")
+# doc_store.save(index_path=doc_store_name+"_index.faiss")
 
-text_converter = TextConverter()
-preprocessor = PreProcessor()
-document_store = FAISSDocumentStore()
+doc_store = FAISSDocumentStore(faiss_index_path=doc_store_name+"_index.faiss")
 
-p = Pipeline()
-p.add_node(component=text_converter, name="TextConverter", inputs=["File"])
-p.add_node(component=preprocessor, name="PreProcessor", inputs=["TextConverter"])
-
-result = p.run(file_paths=["funding_opportunities/NOT-AA-20-017.txt"])
+assert doc_store.faiss_index_factory_str == "Flat"

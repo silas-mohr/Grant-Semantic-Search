@@ -1,27 +1,35 @@
+from typing import List
+
 from haystack.nodes import PreProcessor, TextConverter
 from haystack.document_stores.faiss import FAISSDocumentStore
 
 from file_store_pipeline import FileStorePipeline
 
-text_converter = TextConverter()
-processor = PreProcessor(
-    clean_empty_lines=True,
-    clean_whitespace=True,
-    clean_header_footer=True,
-    split_by="word",
-    split_length=100,
-    split_respect_sentence_boundary=False,
-    split_overlap=0
-)
-doc_store = FAISSDocumentStore(sql_url="sqlite:///test_faiss_document_store.db")
 
-p = FileStorePipeline(doc_store, processor, text_converter)
+class StoreDocuments:
+    def __init__(self, doc_store_name: str):
+        self.doc_store_name = doc_store_name
+        self.text_converter = TextConverter()
+        self.processor = PreProcessor(
+            clean_empty_lines=True,
+            clean_whitespace=True,
+            clean_header_footer=True,
+            split_by="word",
+            split_length=100,
+            split_respect_sentence_boundary=False,
+            split_overlap=0
+        )
+        try:
+            self.doc_store = FAISSDocumentStore.load(index_path=doc_store_name + "_index.faiss")
+        except Exception as ex:
+            self.doc_store = FAISSDocumentStore(sql_url="sqlite:///" + doc_store_name + "_document_store.db")
+            print(ex)
+        self.p = FileStorePipeline(self.text_converter, self.processor, self.doc_store)
 
-docs = p.run(file_path="test/test_file.txt")
-print(docs["documents"][0].meta)
+    def run(self, file_path: str):
+        self.p.run(file_path)
+        self.doc_store.save(index_path=self.doc_store_name + "_index.faiss")
 
-file_paths = ["test/test_file.txt", "test/test_file1.txt"]
-docs = p.run_batch(file_paths=file_paths)
-print(docs["documents"])
-
-p.draw(path="docstore_pipeline.png")
+    def run_batch(self, file_paths: List[str]):
+        self.p.run_batch(file_paths)
+        self.doc_store.save(index_path=self.doc_store_name + "_index.faiss")
