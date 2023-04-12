@@ -1,9 +1,9 @@
-from haystack.nodes import PreProcessor
-from haystack.schema import Document
+from haystack.nodes import PreProcessor, TextConverter
 from haystack.document_stores.faiss import FAISSDocumentStore
 
 from file_store_pipeline import FileStorePipeline
 
+text_converter = TextConverter()
 processor = PreProcessor(
     clean_empty_lines=True,
     clean_whitespace=True,
@@ -13,19 +13,15 @@ processor = PreProcessor(
     split_respect_sentence_boundary=False,
     split_overlap=0
 )
+doc_store = FAISSDocumentStore(sql_url="sqlite:///test_faiss_document_store.db")
 
-docs = []
-with open("funding_opportunities/NOT-AA-20-017.txt") as f:
-    name = f.readline().strip()
-    content = f.readline()
-    docs.append(Document(content=content, meta={"name": name}))
+p = FileStorePipeline(doc_store, processor, text_converter)
 
-docs = processor.process(docs)
-for i in docs:
-    print(i.meta)
+docs = p.run(file_path="test/test_file.txt")
+print(docs["documents"][0].meta)
 
-doc_store = FAISSDocumentStore()
+file_paths = ["test/test_file.txt", "test/test_file1.txt"]
+docs = p.run_batch(file_paths=file_paths)
+print(docs["documents"])
 
-p = FileStorePipeline(doc_store, processor)
-
-p.run()
+p.draw(path="docstore_pipeline.png")
