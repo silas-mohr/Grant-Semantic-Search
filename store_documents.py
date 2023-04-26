@@ -46,7 +46,12 @@ class StoreDocuments:
                           batch_size: int = 10_000,
                           headers: Optional[Dict[str, str]] = None
                           ) -> List[Document]:
-        return self._doc_store.get_all_documents(index, filters, return_embedding, batch_size, headers)
+        return self._doc_store.get_all_documents(index=index,
+                                                 filters=filters,
+                                                 return_embedding=return_embedding,
+                                                 batch_size=batch_size,
+                                                 headers=headers
+                                                 )
 
     def get_retriever(self) -> EmbeddingRetriever:
         return self._emb_retriever
