@@ -1,5 +1,6 @@
 from typing import List, Dict, Optional
 
+from haystack.document_stores import BaseDocumentStore
 from haystack.nodes import PreProcessor, TextConverter
 from haystack.document_stores.faiss import FAISSDocumentStore
 from haystack.nodes import EmbeddingRetriever
@@ -24,18 +25,19 @@ class StoreDocuments:
             self._doc_store = FAISSDocumentStore.load(index_path=self._doc_store_name + "_index.faiss",
                                                       config_path=self._doc_store_name + "_config.json")
         except ValueError:
-            self._doc_store = FAISSDocumentStore(sql_url="sqlite:///" + self._doc_store_name + "_document_store.db")
+            self._doc_store = FAISSDocumentStore(sql_url="sqlite:///" + self._doc_store_name + "_document_store.db",
+                                                 similarity="dot_product")
 
         self._p = FileStorePipeline(self._text_converter, self._processor, self._doc_store, self._doc_store_name)
-        self._retriever = EmbeddingRetriever(document_store=self._doc_store,
-                                             embedding_model="sentence-transformers/multi-qa-mpnet-base-dot-v1"
-                                             )
+        self._emb_retriever = EmbeddingRetriever(document_store=self._doc_store,
+                                                 embedding_model="sentence-transformers/multi-qa-mpnet-base-dot-v1"
+                                                 )
 
     def run(self, file_path: str) -> Document:
-        return self._p.run(file_path, self._retriever)
+        return self._p.run(file_path, self._emb_retriever)
 
     def run_batch(self, file_paths: List[str]) -> List[Document]:
-        return self._p.run_batch(file_paths, self._retriever)
+        return self._p.run_batch(file_paths, self._emb_retriever)
 
     def get_all_documents(self,
                           index: Optional[str] = None,
@@ -47,4 +49,7 @@ class StoreDocuments:
         return self._doc_store.get_all_documents(index, filters, return_embedding, batch_size, headers)
 
     def get_retriever(self) -> EmbeddingRetriever:
-        return self._retriever
+        return self._emb_retriever
+
+    def get_doc_store(self) -> BaseDocumentStore:
+        return self._doc_store

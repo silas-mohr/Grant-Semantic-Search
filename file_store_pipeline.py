@@ -21,7 +21,7 @@ class FileStorePipeline:
     def run(self, file_path: str, embedding_retriever: EmbeddingRetriever) -> Document:
         return self.run_batch([file_path], embedding_retriever)[0]
 
-    def run_batch(self, file_paths: List[str], embedding_retriever: EmbeddingRetriever) -> List[Document]:
+    def run_batch(self, file_paths: List[str], emb_retriever: EmbeddingRetriever) -> List[Document]:
         # Add name metadata to each file in file_paths from first line in each file
         documents = []
         for file_path in file_paths:
@@ -31,7 +31,7 @@ class FileStorePipeline:
                 documents.append(Document(content=content, meta=meta))
         documents = self._preprocessor.process(documents)
         self._document_store.write_documents(documents)
-        self._document_store.update_embeddings(embedding_retriever)
+        self._document_store.update_embeddings(emb_retriever)
         self._document_store.save(index_path=self._doc_store_name + "_index.faiss",
                                   config_path=self._doc_store_name + "_config.json")
         return documents

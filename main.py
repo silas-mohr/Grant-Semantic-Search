@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from store_documents import StoreDocuments
 from search_pipeline import SearchPipeline
 
@@ -19,25 +21,34 @@ def main():
                   "funding_opportunities/NOT-AT-20-015.txt",
                   "funding_opportunities/NOT-AT-21-001.txt"
                   ]
+
     doc_store = StoreDocuments("main_faiss")
-    # print(doc_store.run(file_paths[0]))
     doc_store.run_batch(file_paths)
-    print(len(doc_store.get_all_documents(return_embedding=True)))
+    # print(len(doc_store.get_all_documents(return_embedding=True)))
     retriever = doc_store.get_retriever()
-    search = SearchPipeline(retriever)
+    doc_store = doc_store.get_doc_store()
+    search = SearchPipeline(retriever, doc_store)
+    query = "Where is funding for studying alcohol abuse and alcoholism?"
     # With reader
     # prediction = search.run(
-    #     query="Where is funding for studying alcohol abuse and alcoholism (niaaa)advancing knowledge about the epidemiology of alcohol use",
+    #     query=query,
     #     params={"Retriever": {"top_k": 10}, "Reader": {"top_k": 5}}
     # )
     # No reader
     prediction = search.run(
-        query="Where is funding for studying alcohol abuse and alcoholism (niaaa)advancing knowledge about the epidemiology of alcohol use",
-        params={"Retriever": {"top_k": 10}}
+        query=query,
+        params={"EmbeddingRetriever": {"top_k": 5}, "DPRRetriever": {"top_k": 5}}
     )
-    pred_grant = prediction["documents"][0].meta
-    print("------------------------------------")
-    print("Try this grant: ", pred_grant["name"])
+    print("Your query:", query)
+    for i, grant in enumerate(prediction["documents"]):
+        pred_grant = grant.meta
+        print("------------------------------------")
+        print("Result #", i, sep="")
+        print("Try this grant:", pred_grant["name"])
+        print("Grant number:  ", pred_grant["grant_num"])
+        print("------------------------------------")
+
+    # search.draw(Path("pipeline_visualizations/search_pipeline.png"))
 
 if __name__ == "__main__":
     main()
