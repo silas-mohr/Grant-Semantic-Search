@@ -4,20 +4,19 @@ from store_documents import StoreDocuments
 from search_pipeline import  SearchPipeline
 
 class GrantSearch:
-    def __init__(self, file_paths: List[str], doc_store_name: Optional[str] = "main_faiss"):
-        self._file_paths = file_paths
+    def __init__(self, doc_store_name: Optional[str] = "main_faiss"):
         self._doc_store = StoreDocuments(doc_store_name)
         self._retriever = self._doc_store.get_retriever()
         self._faiss = self._doc_store.get_doc_store()
         self._search = SearchPipeline(self._retriever, self._faiss)
 
-    def store_documents(self):
-        self._doc_store.run_batch(self._file_paths)
+    def store_documents(self,  file_paths: List[str]):
+        self._doc_store.run_batch(file_paths)
 
-    def search(self, query: str):
+    def search(self, query: str, num: Optional[int] = 5):
         prediction = self._search.run(
             query=query,
-            params={"EmbeddingRetriever": {"top_k":10}, "DensePassageRetriever": {"top_k": 10}, "Ranker": {"top_k": 5}}
+            params={"EmbeddingRetriever": {"top_k":num*2}, "DensePassageRetriever": {"top_k": num*2}, "Ranker": {"top_k": num}}
         )
         print("Your query:", query)
         for i, grant in enumerate(prediction["documents"]):
