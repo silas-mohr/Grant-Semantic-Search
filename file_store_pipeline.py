@@ -25,7 +25,7 @@ class FileStorePipeline:
         # Add name metadata to each file in file_paths from first line in each file
         documents = []
         for file_path in file_paths:
-            with open("funding_opportunities/" + file_path) as f:
+            with open("funding_opportunities/" + file_path, encoding="utf8") as f:
                 meta = {"name": f.readline().strip(), "grant_num": basename(f.name)[:-4], "url": f.readline().strip()}
                 content = f.readline()
                 documents.append(Document(content=content, meta=meta))

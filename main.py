@@ -4,6 +4,7 @@ import argparse as ap
 
 from grant_search import GrantSearch
 
+
 def parsing():
     parsed = None
     try:
@@ -17,6 +18,7 @@ def parsing():
         exit(2)
     return parsed
 
+
 def main():
     warnings.filterwarnings("ignore")
 
@@ -26,13 +28,14 @@ def main():
     if args.update:
         names = os.listdir(r"funding_opportunities")
         print(len(names))
-        search.store_documents(names[0:200])
+        search.store_documents(names[0:50])
 
     if args.query is not None:
         if args.num is not None:
             search.search(args.query, num=args.num)
         else:
             search.search(args.query)
+
 
 if __name__ == "__main__":
     main()

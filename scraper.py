@@ -34,14 +34,16 @@ class GrantScraper:
                 paragraphs = soup.find_all('p')
                 text = ""
                 for paragraph in paragraphs:
-                    text += paragraph.get_text()
+                    new_text = paragraph.get_text()
                     try:
-                        text = unicodedata.normalize('NFKD', text).replace('\n', ' ').replace('\r', ' ').lower().strip()
+                        new_text = unicodedata.normalize('NFKD', new_text).replace('\n', ' ').replace('\r', ' ').lower().strip()
                     except Exception as ex:
                         print(f"Exception normalizing the text: {ex}")
+                    text += new_text
                     text = re.sub(r'\s+', ' ', text)
+                title = re.sub(r'\s+', ' ', doc["title"])
                 funding_opportunity = {
-                    "title": doc["title"],
+                    "title": title,
                     "document_number": doc["document_number"],
                     "URL": doc["url"],
                     "text": text

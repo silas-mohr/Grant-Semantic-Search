@@ -1,7 +1,9 @@
+import pickle
 from typing import Optional, List
 
 from store_documents import StoreDocuments
 from search_pipeline import  SearchPipeline
+
 
 class GrantSearch:
     def __init__(self, doc_store_name: Optional[str] = "main_faiss"):
@@ -27,3 +29,12 @@ class GrantSearch:
             print("Grant number:  ", grant_meta["grant_num"])
             print("Link:", grant_meta["url"])
             print("-" * 36)
+        return prediction
+
+
+def main():
+    pickle.dumps(GrantSearch())
+
+
+if __name__ == "__main__":
+    main()
