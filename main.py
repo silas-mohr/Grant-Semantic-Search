@@ -6,7 +6,6 @@ from grant_search import GrantSearch
 
 
 def parsing():
-    parsed = None
     try:
         parser = ap.ArgumentParser(description='Semantic Search for Government Grants Within Healthcare', allow_abbrev=False)
         parser.add_argument('update', help='should the document store be updated?', type=int)

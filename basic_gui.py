@@ -130,7 +130,7 @@ def main():
             num_resp = int(line_edits[1].text())
             if num_resp < 1:
                 num_resp = 1
-        except:
+        except ValueError:
             num_resp = 5
         resp = search.search(query=query_txt, num=num_resp)
         display_results(grant_display, resp, num_resp)

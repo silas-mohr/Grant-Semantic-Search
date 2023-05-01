@@ -9,7 +9,6 @@ from grant_search import GrantSearch
 
 
 def parsing():
-    parsed = None
     try:
         parser = ap.ArgumentParser(description='Server for the semantic search application', allow_abbrev=False)
         parser.add_argument('port', help='the port at which the server should listen', type=int)
