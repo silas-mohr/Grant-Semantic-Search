@@ -1,6 +1,6 @@
 This is an application that is allows the user to semantically search for grants from the NIH.
 
-The attached database is purely for testing purposes as it only contains around 375 files so that GitHub can store it.
+The attached database is purely for testing purposes as it only contains around 375 files to reduce its size so that GitHub can store it.
 If you would like to use the full set of grants, you must save the documents through either `basic_gui.py` or `simple_server.py`.
 
 Before running, make sure that the required packages are installed by first making sure pip is upgraded with `pip install --upgrade pip`
