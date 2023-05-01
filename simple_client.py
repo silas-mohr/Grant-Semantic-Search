@@ -2,17 +2,15 @@ from sys import exit, argv, stderr
 import argparse as ap
 from socket import socket
 from pickle import dump, load
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QPushButton
-from PyQt5.QtWidgets import QDesktopWidget
-from PyQt5.QtWidgets import QLabel, QLineEdit, QGridLayout, QListWidget, QListWidgetItem, QMessageBox, QDialog
-from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QPushButton, QTableWidgetItem, QTableWidget, \
+    QAbstractItemView
+from PyQt5.QtWidgets import QDesktopWidget, QLabel, QLineEdit, QGridLayout, QMessageBox
 from PyQt5.QtCore import Qt
 
 from queryclass import QueryObject
 
 
 def parsing():
-    parsed = None
     try:
         parser = ap.ArgumentParser(description='Client for the semantic search application', allow_abbrev=False)
         parser.add_argument('host', help='the host on which the server is running')
@@ -66,7 +64,6 @@ def create_buttons():
 
 
 def create_control_frame(labels, line_edits, buttons):
-
     control_frame_layout = QGridLayout()
     control_frame_layout.setSpacing(10)
     control_frame_layout.setContentsMargins(0, 0, 0, 0)
@@ -84,7 +81,13 @@ def create_control_frame(labels, line_edits, buttons):
 
 
 def create_grant_display():
-    grant_display = QListWidget()
+    grant_display = QTableWidget()
+    grant_display.setColumnCount(3)
+    grant_display.setHorizontalHeaderLabels(["Grant Number", "Link", "Title"])
+    grant_display.setColumnWidth(0, 100)
+    grant_display.setColumnWidth(1, 400)
+    grant_display.setColumnWidth(2, 1000)
+    grant_display.setEditTriggers(QAbstractItemView.NoEditTriggers)
     return grant_display
 
 
@@ -103,38 +106,16 @@ def create_window(central_frame):
     window.setWindowTitle('Semantic Search For Government Grants')
     window.setCentralWidget(central_frame)
     screen_size = QDesktopWidget().screenGeometry()
-    window.resize(screen_size.width()//2, screen_size.height()//2)
+    window.resize((screen_size.width() * 2) // 3, (screen_size.height() * 2) // 3)
     return window
 
 
-def format_list_items(documents):
-    items = []
-    for i, grant in enumerate(documents["documents"]):
-        grant_meta = grant.meta
-        name = grant_meta["name"]
-        # name = (name[:80] + '...') if len(name) > 83 else name
-        url = grant_meta["url"]
-        col1 = f'{grant_meta["grant_num"]: >14}'
-        col2 = f' |-| {url: >67}'
-        col3 = f' |-| {name: >}'
-        item_str = col1 + col2 + col3
-        items.append(item_str)
-    return items
-
-
-def display_results(grant_display, items):
-    grant_display.clear()
-    list_items = []
-    # items = format_list_items(response)
-    for item in items:
-        new_item = QListWidgetItem()
-        new_item.setText(item)
-        new_item.setFont(QFont('Courier'))
-        grant_display.addItem(new_item)
-        list_items.append(new_item)
-
-    grant_display.setCurrentRow(0)
-    grant_display.repaint()
+def display_results(grant_display, items, num):
+    grant_display.setRowCount(num)
+    for i, item in enumerate(items):
+        for j, data in enumerate(item):
+            grant_display.setItem(i, j, QTableWidgetItem(data))
+    grant_display.setCurrentCell(0, 0)
 
 
 def search_slot_helper(line_edits, grant_display, host, port, window):
@@ -153,7 +134,7 @@ def search_slot_helper(line_edits, grant_display, host, port, window):
     resp = get_connection(query, host, port)
     if resp[0]:
         if resp[1] is not None:
-            display_results(grant_display, resp[1])
+            display_results(grant_display, resp[1], num_resp)
     else:
         msg_box = QMessageBox(window)
         msg_box.setWindowTitle("Server Error")

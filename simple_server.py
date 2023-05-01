@@ -2,7 +2,6 @@ import os
 from os import name
 from sys import exit, stderr
 from socket import socket, SOL_SOCKET, SO_REUSEADDR
-from multiprocessing import Process
 from pickle import dump, load
 import argparse as ap
 
@@ -27,12 +26,11 @@ def format_list_items(documents):
     for i, grant in enumerate(documents["documents"]):
         grant_meta = grant.meta
         name = grant_meta["name"]
-        # name = (name[:80] + '...') if len(name) > 83 else name
         url = grant_meta["url"]
-        col1 = f'{grant_meta["grant_num"]: >14}'
-        col2 = f' |-| {url: >67}'
-        col3 = f' |-| {name: >}'
-        item_str = col1 + col2 + col3
+        col1 = f'{grant_meta["grant_num"]}'
+        col2 = f'{url}'
+        col3 = f'{name}'
+        item_str = [col1, col2, col3]
         items.append(item_str)
     return items
 

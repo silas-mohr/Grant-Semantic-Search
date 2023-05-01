@@ -1,9 +1,7 @@
 import os
 from sys import exit, argv
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QPushButton, QTableView, QTableWidget, QTableWidgetItem
-from PyQt5.QtWidgets import QDesktopWidget
-from PyQt5.QtWidgets import QLabel, QLineEdit, QGridLayout, QListWidget, QListWidgetItem, QMessageBox, QDialog
-from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QPushButton, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QDesktopWidget, QAbstractItemView, QLabel, QLineEdit, QGridLayout, QMessageBox
 from PyQt5.QtCore import Qt
 
 from grant_search import GrantSearch
@@ -37,7 +35,6 @@ def create_buttons():
 
 
 def create_control_frame(labels, line_edits, buttons):
-
     control_frame_layout = QGridLayout()
     control_frame_layout.setSpacing(10)
     control_frame_layout.setContentsMargins(0, 0, 0, 0)
@@ -56,10 +53,13 @@ def create_control_frame(labels, line_edits, buttons):
 
 
 def create_grant_display():
-    # grant_display = QListWidget()
     grant_display = QTableWidget()
     grant_display.setColumnCount(3)
     grant_display.setHorizontalHeaderLabels(["Grant Number", "Link", "Title"])
+    grant_display.setColumnWidth(0, 100)
+    grant_display.setColumnWidth(1, 400)
+    grant_display.setColumnWidth(2, 1000)
+    grant_display.setEditTriggers(QAbstractItemView.NoEditTriggers)
     return grant_display
 
 
@@ -78,7 +78,7 @@ def create_window(central_frame):
     window.setWindowTitle('Semantic Search For Government Grants')
     window.setCentralWidget(central_frame)
     screen_size = QDesktopWidget().screenGeometry()
-    window.resize(screen_size.width()//2, screen_size.height()//2)
+    window.resize((screen_size.width() * 2) // 3, (screen_size.height() * 2) // 3)
     return window
 
 
@@ -87,7 +87,6 @@ def format_list_items(documents):
     for i, grant in enumerate(documents["documents"]):
         grant_meta = grant.meta
         name = grant_meta["name"]
-        # name = (name[:80] + '...') if len(name) > 83 else name
         url = grant_meta["url"]
         col1 = f'{grant_meta["grant_num"]}'
         col2 = f'{url}'
@@ -104,18 +103,6 @@ def display_results(grant_display, response, num):
         for j, data in enumerate(item):
             grant_display.setItem(i, j, QTableWidgetItem(data))
     grant_display.setCurrentCell(0, 0)
-    # grant_display.clear()
-    # list_items = []
-    # items = format_list_items(response)
-    # for item in items:
-    #     new_item = QListWidgetItem()
-    #     new_item.setText(item)
-    #     new_item.setFont(QFont('Courier'))
-    #     grant_display.addItem(new_item)
-    #     list_items.append(new_item)
-    #
-    # grant_display.setCurrentRow(0)
-    # grant_display.repaint()
 
 
 def main():
@@ -133,7 +120,6 @@ def main():
     window = create_window(central_frame)
     window.show()
 
-    # Handle events for the LineEdit objects.
     def search_slot():
         query_txt = line_edits[0].text()
         print(query_txt)
@@ -150,14 +136,24 @@ def main():
         display_results(grant_display, resp, num_resp)
 
     def save_slot():
-        names = os.listdir(r"funding_opportunities")
-        print(f"Found {len(names)} files.")
         msg_box = QMessageBox(window)
         msg_box.setWindowTitle("Saving Documents")
         msg_box.setIcon(QMessageBox.Information)
-        msg_box.setText("This will take a while. Thank you for your patience. \n Click OK to continue.")
-        msg_box.exec_()
+        msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg_box.setText("This will take a while (2-3 hours). Thank you for your patience. \n Click Ok to continue"
+                        + " or Cancel to cancel.")
+        ok = msg_box.exec_()
+        if ok == QMessageBox.Ok:
+            save_docs()
+        else:
+            print("Canceled saving documents.")
+
+    def save_docs():
+        names = os.listdir(r"funding_opportunities")
+        print(f"Found {len(names)} files.")
         search.store_documents(names)
+        print("Documents saved.")
+        msg_box = QMessageBox(window)
         msg_box.setWindowTitle("Documents Saved")
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setText("All documents have been saved. \n Click OK to continue.")
