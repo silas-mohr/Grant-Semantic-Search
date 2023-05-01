@@ -1,6 +1,6 @@
 import os
 from sys import exit, argv
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QPushButton, QTableView, QTableWidget, QTableWidgetItem
 from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtWidgets import QLabel, QLineEdit, QGridLayout, QListWidget, QListWidgetItem, QMessageBox, QDialog
 from PyQt5.QtGui import QFont
@@ -56,7 +56,10 @@ def create_control_frame(labels, line_edits, buttons):
 
 
 def create_grant_display():
-    grant_display = QListWidget()
+    # grant_display = QListWidget()
+    grant_display = QTableWidget()
+    grant_display.setColumnCount(3)
+    grant_display.setHorizontalHeaderLabels(["Grant Number", "Link", "Title"])
     return grant_display
 
 
@@ -86,27 +89,33 @@ def format_list_items(documents):
         name = grant_meta["name"]
         # name = (name[:80] + '...') if len(name) > 83 else name
         url = grant_meta["url"]
-        col1 = f'{grant_meta["grant_num"]: >14}'
-        col2 = f' |-| {url: >67}'
-        col3 = f' |-| {name: >}'
-        item_str = col1 + col2 + col3
+        col1 = f'{grant_meta["grant_num"]}'
+        col2 = f'{url}'
+        col3 = f'{name}'
+        item_str = [col1, col2, col3]
         items.append(item_str)
     return items
 
 
-def display_results(grant_display, response):
-    grant_display.clear()
-    list_items = []
+def display_results(grant_display, response, num):
+    grant_display.setRowCount(num)
     items = format_list_items(response)
-    for item in items:
-        new_item = QListWidgetItem()
-        new_item.setText(item)
-        new_item.setFont(QFont('Courier'))
-        grant_display.addItem(new_item)
-        list_items.append(new_item)
-
-    grant_display.setCurrentRow(0)
-    grant_display.repaint()
+    for i, item in enumerate(items):
+        for j, data in enumerate(item):
+            grant_display.setItem(i, j, QTableWidgetItem(data))
+    grant_display.setCurrentCell(0, 0)
+    # grant_display.clear()
+    # list_items = []
+    # items = format_list_items(response)
+    # for item in items:
+    #     new_item = QListWidgetItem()
+    #     new_item.setText(item)
+    #     new_item.setFont(QFont('Courier'))
+    #     grant_display.addItem(new_item)
+    #     list_items.append(new_item)
+    #
+    # grant_display.setCurrentRow(0)
+    # grant_display.repaint()
 
 
 def main():
@@ -138,7 +147,7 @@ def main():
         except:
             num_resp = 5
         resp = search.search(query=query_txt, num=num_resp)
-        display_results(grant_display, resp)
+        display_results(grant_display, resp, num_resp)
 
     def save_slot():
         names = os.listdir(r"funding_opportunities")
