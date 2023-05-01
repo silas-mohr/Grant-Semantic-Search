@@ -1,18 +1,22 @@
 import os
 from os import name
+import warnings
 from sys import exit, stderr
 from socket import socket, SOL_SOCKET, SO_REUSEADDR
 from pickle import dump, load
 import argparse as ap
+from typing import Optional
 
 from grant_search import GrantSearch
+from scraper import GrantScraper
 
 
 def parsing():
     try:
         parser = ap.ArgumentParser(description='Server for the semantic search application', allow_abbrev=False)
         parser.add_argument('port', help='the port at which the server should listen', type=int)
-        parser.add_argument('update', help='1 to update the document embeddings, anything else to do nothing', type=int)
+        parser.add_argument('-u', '--update', help='1 to update the document embeddings, anything else to do nothing', type=int)
+        parser.add_argument('-p', '--print', help='1 to print the results of a query, anything else to do nothing', type=int)
         parsed = parser.parse_args()
     except Exception as ex:
         print(ex, file=stderr)
@@ -34,13 +38,13 @@ def format_list_items(documents):
     return items
 
 
-def handle_client(sock: socket, search: GrantSearch):
+def handle_client(sock: socket, search: GrantSearch, print_results: Optional[bool] = True):
     try:
         in_flo = sock.makefile(mode='rb')
         client_query = load(in_flo)
         print("Received command: run_query")
         if client_query.get_query():
-            docs = search.search(client_query.get_query(), num=client_query.get_num())
+            docs = search.search(client_query.get_query(), num=client_query.get_num(), print_results=print_results)
             response = format_list_items(docs)
             handled = True
         else:
@@ -57,15 +61,19 @@ def handle_client(sock: socket, search: GrantSearch):
 
 
 def main():
+    warnings.filterwarnings("ignore")  # Prevents warning about TypedStorage that doesn't affect this program
     args = parsing()
 
     try:
         grant_search = GrantSearch()
         if args.update == 1:
-            print("Updating document store, this can take a very long time (2-3 hours for all documents).")
+            print("Updating document store, this can take a very long time (3-4 hours for all documents).")
+            print("Re-scraping grant pages")
+            scraper = GrantScraper('datasets/active_funding.csv')
+            scraper.scrape()
             names = os.listdir(r"funding_opportunities")
             print(f"Found {len(names)} documents")
-            grant_search.store_documents(names[0:10])
+            grant_search.store_documents(names)
         port = args.port
         server_sock = socket()
         print('Opened server socket')
@@ -81,7 +89,7 @@ def main():
                 with sock:
                     print('Accepted connection, opened socket')
                     print("Client address: " + client_addr[0])
-                    handle_client(sock, grant_search)
+                    handle_client(sock, grant_search, print_results=(args.print == 1))
                     print("Closed socket")
             except Exception as ex:
                 print(ex, file=stderr)
