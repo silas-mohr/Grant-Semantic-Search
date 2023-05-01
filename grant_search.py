@@ -34,7 +34,8 @@ class GrantSearch:
 
 
 def main():
-    pickle.dumps(GrantSearch())
+    grant_search = GrantSearch()
+    grant_search._search.draw("pipeline_visualizations/search_pipeline.png")
 
 
 if __name__ == "__main__":
