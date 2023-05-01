@@ -2,7 +2,7 @@ import pickle
 from typing import Optional, List
 
 from store_documents import StoreDocuments
-from search_pipeline import  SearchPipeline
+from search_pipeline import SearchPipeline
 
 
 class GrantSearch:

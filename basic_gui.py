@@ -130,7 +130,7 @@ def main():
             num_resp = int(line_edits[1].text())
             if num_resp < 1:
                 num_resp = 1
-        except:
+        except ValueError:
             num_resp = 5
         resp = search.search(query=query_txt, num=num_resp)
         display_results(grant_display, resp, num_resp)
@@ -140,7 +140,7 @@ def main():
         msg_box.setWindowTitle("Saving Documents")
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg_box.setText("This will take a while (2-3 hours). Thank you for your patience. \n Click Ok to continue"
+        msg_box.setText("This will take a while (3-4 hours). Thank you for your patience. \n Click Ok to continue"
                         + " or Cancel to cancel.")
         ok = msg_box.exec_()
         if ok == QMessageBox.Ok:

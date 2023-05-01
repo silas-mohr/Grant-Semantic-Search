@@ -15,8 +15,7 @@ class GrantScraper:
         output = []
         with open(self.file_path, "r") as f:
             reader = csv.reader(f)
-            for i in range(1000):
-                next(reader)
+            next(reader)  # Skip header line
             for line in reader:
                 output.append({'title': line[0], 'document_number': line[7], 'url': line[10]})
         return output
@@ -60,7 +59,7 @@ class GrantScraper:
 
 def main():
     scraper = GrantScraper('datasets/active_funding.csv')
-    print(scraper.scrape())
+    scraper.scrape()
 
 
 if __name__ == "__main__":
