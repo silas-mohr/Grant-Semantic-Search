@@ -16,9 +16,7 @@ class SearchPipeline:
                                                    query_embedding_model="facebook/dpr-question_encoder-single-nq-base",
                                                    passage_embedding_model="facebook/dpr-ctx_encoder-single-nq-base"
                                                    )
-        self._joiner = JoinDocuments(join_mode="concatenate")
         self._ranker = SentenceTransformersRanker(model_name_or_path="cross-encoder/ms-marco-MiniLM-L-12-v2")
-
         self._pipe.add_node(component=self._query_classifier, name="QueryClassifier", inputs=["Query"])
         self._pipe.add_node(component=self._emb_retriever, name="EmbeddingRetriever", inputs=["QueryClassifier.output_1"])
         self._pipe.add_node(component=self._dp_retriever, name="DensePassageRetriever", inputs=["QueryClassifier.output_2"])

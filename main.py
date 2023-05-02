@@ -2,7 +2,6 @@ import os
 import random
 import warnings
 import argparse as ap
-from tqdm import tqdm
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -54,12 +53,11 @@ def main():
                ]
 
     num_results = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-    np.random.seed(seed)
+    random.seed(seed)
 
     for i in range(num_iterations):
         times = []
-        for num in num_results:  # tqdm(num_results, bar_format='{l_bar}{bar:30}{r_bar}'):
+        for num in num_results:
             query = queries[random.randint(0, len(queries) - 1)]
             start = time.perf_counter()
             search.search(query, num=num, print_results=False)
@@ -69,12 +67,21 @@ def main():
         average_times.append(times)
     average_times = np.mean(average_times, axis=0)
 
+    print(average_times)
+
     plt.plot(num_results, average_times, 'r', label="data")
+
+    best_fit = np.polyfit(num_results, average_times, 1)
+    print("Best Fit:", best_fit)
+    plt.plot(num_results,
+             np.poly1d(best_fit)(num_results),
+             'b-',
+             label="fit")
 
     plt.xlabel("Number of results")
     plt.ylabel("Time (s)")
     plt.title("Search Time By Number of Results")
-    plt.legend(["Runtime"])
+    plt.legend(["Runtime", "Best Fit"])
     plt.show()
 
 
